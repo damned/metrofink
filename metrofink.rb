@@ -1,9 +1,15 @@
 require 'nokogiri'
 require 'open-uri'
 
-class TramScraper
+class Metrofink
   @@stations = {
-    'shudehill' => 'shudehill-tram'
+    'gardens' => 'piccadilly-gardens-tram',
+    'piccadilly' => 'piccadilly-tram',
+    'piccadilly-gardens' => 'piccadilly-gardens-tram',
+    'shudehill' => 'shudehill-tram',
+    'st-peters' => 'st-peters-square-tram',
+    'st-peters-square' => 'st-peters-square-tram',
+    'victoria' => 'victoria-tram'
   }
   
   def stations
@@ -28,6 +34,10 @@ class TramFragment
     @el = nokogiri_element
   end
   
+  def double?
+    carriages.downcase.include?('double')
+  end
+
   def carriages
     field '.departure-carriages'
   end
@@ -47,11 +57,13 @@ class TramFragment
   end
 end
 
-scraper = TramScraper.new
+metrofink = Metrofink.new
 
 stopname = ARGV.to_a.first
 puts "looking for tram times for: #{stopname}"
 
-scraper.trams(stopname).each{|tram| 
-  puts tram.destination + ' to ' + tram.wait + ' - ' + tram.carriages
+metrofink.trams(stopname).each{ |tram| 
+  desc = tram.wait + ': ' + tram.destination
+  desc += ' (dbl)' if tram.double?
+  puts desc
 }
